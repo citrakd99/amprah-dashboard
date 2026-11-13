@@ -21,11 +21,15 @@
     return isNaN(Date.parse(s)) ? null : new Date(Date.parse(s)).toISOString().slice(0, 10);
   }
 
-  function readSheet(XLSX, wb, match) {
-    const name = wb.SheetNames.find(n => match.test(n));
+  function readSheet(XLSX, wb, match, fallback) {
+    const read = n => XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: null });
+    const headAt = rows => rows.slice(0, 30).findIndex(r => r && r.some(c => /^tanggal$/i.test(str(c))));
+    let name = wb.SheetNames.find(n => match.test(n));
+    // nama sheet diganti? pakai sheet pertama yang punya kolom TANGGAL (hanya bila fallback diizinkan)
+    if (!name && fallback) name = wb.SheetNames.find(n => headAt(read(n)) >= 0);
     if (!name) return [];
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: null });
-    const h = rows.findIndex(r => r && r.some(c => /^tanggal$/i.test(str(c))));
+    const rows = read(name);
+    const h = headAt(rows);
     if (h < 0) return [];
     const head = rows[h].map(c => str(c).toUpperCase());
     const col = re => head.findIndex(x => re.test(x));
@@ -49,7 +53,7 @@
   }
 
   function extract(XLSX, wb, meta) {
-    const tx = readSheet(XLSX, wb, /PENGELUARAN/i);
+    const tx = readSheet(XLSX, wb, /PENGELUARAN/i, true);
     let incoming = readSheet(XLSX, wb, /INCOMING/i);
     // Sheet INCOMING yang isinya salinan persis sheet pengeluaran belum berisi data dana masuk
     const incomingDuplicate = incoming.length > 0 && JSON.stringify(incoming) === JSON.stringify(tx);

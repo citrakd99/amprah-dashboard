@@ -384,8 +384,6 @@
     D = processData(model);
     document.body.classList.remove('locked');
     $('#projSub').textContent = `${D.tx.length} transaksi · ${rp(D.total)}${D.nDays ? ` · ${tgl(iso(D.t0))} – ${tgl(iso(D.t1))}` : ''}`;
-    const b = $('#srcBadge'); b.className = 'badge live'; b.textContent = 'Live · Google Sheet';
-    $('#srcNote').textContent = 'dimuat ' + new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date());
     renderRingkasan(); renderTransaksi(); renderNota();
     const hasNota = D.open.length + D.noNota.length > 0, nb = $('#tabs button[data-tab=nota]');
     nb.hidden = !hasNota; nb.textContent = `Nota belum beres (${D.open.length + D.noNota.length})`;
@@ -400,7 +398,7 @@
     });
   }
   async function loadLive() {
-    const r = await fetch(`https://docs.google.com/spreadsheets/d/${KEY}/export?format=xlsx`, { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
+    const r = await fetch(`https://docs.google.com/spreadsheets/d/${KEY}/export?format=xlsx&t=${Date.now()}`, { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     if ((r.headers.get('content-type') || '').includes('text/html')) throw new Error('sheet belum dibagikan');
     const buf = await r.arrayBuffer();
@@ -408,8 +406,8 @@
     return window.CashExtract.extract(window.XLSX, window.XLSX.read(buf, { type: 'array' }), { source: 'live' });
   }
 
-  function showGate(msg) {
-    D = null;
+  function showGate(msg, retry) {
+    D = null; lastSig = '';
     document.body.classList.add('locked');
     $('#projSub').textContent = 'Akses terbatas';
     document.querySelectorAll('.tab').forEach(x => { x.classList.toggle('on', x.id === 'tab-ringkasan'); if (x.id !== 'tab-ringkasan') x.innerHTML = ''; });
@@ -417,7 +415,8 @@
       <p class="hint">Dashboard ini tidak menyimpan data apa pun. Tempel link Google Sheet yang Anda terima untuk membukanya. Link hanya disimpan di browser ini.</p>
       ${msg ? `<p class="neg">${esc(msg)}</p>` : ''}
       <input type="password" id="gateIn" autocomplete="off" spellcheck="false" placeholder="https://docs.google.com/spreadsheets/d/…" aria-label="Link Google Sheet">
-      <button type="submit">Buka dashboard</button></form>`;
+      <div class="gate-btns"><button type="submit">Buka dashboard</button>${retry ? '<button type="button" id="gateRetry" class="ghost">Coba lagi</button>' : ''}</div></form>`;
+    if (retry) $('#gateRetry').addEventListener('click', () => load());
     $('#gate').addEventListener('submit', e => {
       e.preventDefault();
       const id = parseId($('#gateIn').value);
@@ -426,20 +425,37 @@
     });
   }
 
-  let busy = false;
-  async function load() {
+  // ---------- muat & perbarui otomatis ----------
+  const REFRESH_MS = 5 * 60 * 1000;   // cek ulang Google Sheet tiap 5 menit selama halaman terbuka
+  let busy = false, lastSig = '', lastOk = 0;
+  const jam = () => new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+  async function load(auto) {
     if (!KEY) return showGate();
     if (busy) return; busy = true;
     const btn = $('#btnRefresh'), b = $('#srcBadge');
-    btn.disabled = true; $('#srcNote').textContent = 'membaca Google Sheet…';
+    btn.disabled = true;
+    if (auto !== true) $('#srcNote').textContent = 'membaca Google Sheet…';
     try {
-      renderAll(await loadLive());
+      const model = await loadLive();
+      const sig = JSON.stringify([model.tx, model.incoming]);
+      const changed = sig !== lastSig;
+      if (changed || !D) { renderAll(model); lastSig = sig; }   // render ulang hanya bila isi sheet berubah
+      lastOk = Date.now();
+      b.className = 'badge live'; b.textContent = 'Live · Google Sheet';
+      $('#srcNote').textContent = `${auto === true && changed ? 'data baru masuk' : 'diperiksa'} ${jam()} · otomatis tiap 5 menit`;
     } catch (e) {
-      b.className = 'badge err'; b.textContent = 'Gagal memuat';
-      $('#srcNote').textContent = D ? 'gagal memperbarui – menampilkan data terakhir' : '';
-      if (!D) { KEY = ''; store.set(''); showGate('Sheet tidak bisa dibaca. Periksa link-nya, pastikan sheet dibagikan “Siapa saja yang memiliki link → Pelihat”, dan koneksi internet aktif.'); }
+      b.className = 'badge err'; b.textContent = navigator.onLine === false ? 'Offline' : 'Gagal memuat';
+      $('#srcNote').textContent = D ? `gagal memperbarui ${jam()} – menampilkan data terakhir` : '';
+      if (!D) showGate(navigator.onLine === false
+        ? 'Tidak ada koneksi internet. Data akan dimuat otomatis begitu tersambung.'
+        : 'Sheet tidak bisa dibaca. Periksa link-nya dan pastikan sheet dibagikan “Siapa saja yang memiliki link → Pelihat”.', true);
     } finally { busy = false; btn.disabled = false; }
   }
+  const typing = () => { const a = document.activeElement; return !!a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName) && !document.body.classList.contains('locked'); };
+  setInterval(() => { if (KEY && !document.hidden && !typing()) load(true); }, REFRESH_MS);
+  // saat kembali ke aplikasi / koneksi pulih: langsung cek bila data sudah lebih dari 1 menit
+  document.addEventListener('visibilitychange', () => { if (KEY && !document.hidden && Date.now() - lastOk > 60000) load(true); });
+  addEventListener('online', () => { if (KEY) load(true); });
 
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) showTab(b.dataset.tab); });
   // klik batang / status di ringkasan -> tab Transaksi terfilter
@@ -449,7 +465,7 @@
     F[el.dataset.f] = el.dataset.v; if (el.dataset.n) F.nota = el.dataset.n;
     renderTransaksi(); hideTip(); showTab('transaksi');
   });
-  $('#btnRefresh').addEventListener('click', load);
+  $('#btnRefresh').addEventListener('click', () => load());
 
   // ---------- aplikasi terpasang (PWA) ----------
   if ('serviceWorker' in navigator) addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });

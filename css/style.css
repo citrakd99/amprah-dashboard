@@ -161,3 +161,6 @@ td .mini i { display: block; height: 100%; background: var(--s2); }
 /* aplikasi terpasang */
 .install { border: 0; border-radius: 6px; padding: 7px 12px; background: var(--s1); color: #fff; font-weight: 600; font-size: 13px; }
 @media (display-mode: standalone) { .install { display: none !important; } .top { padding-top: env(safe-area-inset-top); } }
+
+.gate-btns { display: flex; gap: 8px; }
+.gate button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--axis); }

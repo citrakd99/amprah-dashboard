@@ -24,3 +24,8 @@ Sheet harus dibagikan "Siapa saja yang memiliki link → Pelihat".
 Situs ini bisa dipasang seperti aplikasi: tombol **Pasang aplikasi** (Chrome/Edge), atau di iPhone
 Safari → Bagikan → **Tambahkan ke Layar Utama**. Service worker (`sw.js`) hanya menyimpan berkas
 aplikasi; data sheet tidak pernah disimpan di cache.
+
+## Pembaruan data
+Data dibaca ulang dari Google Sheet saat halaman dibuka, tiap 5 menit selama terbuka, saat kembali
+ke aplikasi, saat koneksi pulih, dan saat tombol **Muat ulang** ditekan. Kolom dikenali dari nama
+judulnya, jadi urutan kolom boleh berubah; baris, jenis, PIC, dan status nota baru ikut terbaca.
