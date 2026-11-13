@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Dashboard Amprah</title>
+<link rel="stylesheet" href="css/style.css?v=3">
+</head>
+<body class="locked">
+<header class="top">
+  <div class="top-in">
+    <div class="title">
+      <p class="eyebrow">Dashboard view only</p>
+      <h1>Tracking Pengeluaran Amprah</h1>
+      <p class="sub" id="projSub">Memuat…</p>
+    </div>
+    <div class="src">
+      <span class="badge" id="srcBadge">Memuat…</span>
+      <span class="src-note" id="srcNote"></span>
+      <button id="btnRefresh" type="button" title="Muat ulang data dari Google Sheet">↻ Muat ulang</button>
+      <button id="btnLock" type="button" title="Hapus link data dari browser ini">Keluar</button>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" data-tab="ringkasan" class="on">Ringkasan</button>
+    <button role="tab" data-tab="transaksi">Transaksi</button>
+    <button role="tab" data-tab="nota">Nota belum beres</button>
+  </nav>
+</header>
+
+<main id="app">
+  <section id="tab-ringkasan" class="tab on"></section>
+  <section id="tab-transaksi" class="tab"></section>
+  <section id="tab-nota" class="tab"></section>
+</main>
+
+<footer class="foot">
+  <span>View only · data dibaca langsung dari Google Sheet, tidak disimpan di situs ini.</span>
+</footer>
+<div id="tip" class="tip" hidden></div>
+
+<script src="js/config.js?v=3"></script>
+<script src="js/extract.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
+</body>
+</html>
