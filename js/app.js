@@ -450,6 +450,17 @@
     renderTransaksi(); hideTip(); showTab('transaksi');
   });
   $('#btnRefresh').addEventListener('click', load);
+
+  // ---------- aplikasi terpasang (PWA) ----------
+  if ('serviceWorker' in navigator) addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  let installEvt = null;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('#btnInstall').hidden = false; });
+  addEventListener('appinstalled', () => { installEvt = null; $('#btnInstall').hidden = true; });
+  $('#btnInstall').addEventListener('click', async () => {
+    if (!installEvt) return;
+    installEvt.prompt(); await installEvt.userChoice.catch(() => {});
+    installEvt = null; $('#btnInstall').hidden = true;
+  });
   $('#btnLock').addEventListener('click', () => { KEY = ''; store.set(''); showGate(); });
   let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(drawCharts, 150); });
   load();

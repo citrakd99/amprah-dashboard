@@ -157,3 +157,7 @@ td .mini i { display: block; height: 100%; background: var(--s2); }
 .gate { max-width: 520px; margin: 32px auto; display: grid; gap: 10px; }
 .gate input { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--axis); border-radius: 6px; padding: 9px 10px; width: 100%; }
 .gate button { justify-self: start; border: 0; border-radius: 6px; padding: 8px 14px; background: var(--s1); color: #fff; font-weight: 600; }
+
+/* aplikasi terpasang */
+.install { border: 0; border-radius: 6px; padding: 7px 12px; background: var(--s1); color: #fff; font-weight: 600; font-size: 13px; }
+@media (display-mode: standalone) { .install { display: none !important; } .top { padding-top: env(safe-area-inset-top); } }

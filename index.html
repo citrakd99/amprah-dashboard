@@ -6,7 +6,14 @@
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="referrer" content="no-referrer">
 <title>Dashboard Amprah</title>
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2a78d6">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Amprah">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body class="locked">
 <header class="top">
@@ -16,6 +23,7 @@
       <h1>Tracking Pengeluaran Amprah</h1>
       <p class="sub" id="projSub">Memuat…</p>
     </div>
+    <button id="btnInstall" type="button" class="install" hidden>⤓ Pasang aplikasi</button>
     <div class="src">
       <span class="badge" id="srcBadge">Memuat…</span>
       <span class="src-note" id="srcNote"></span>
@@ -41,8 +49,8 @@
 </footer>
 <div id="tip" class="tip" hidden></div>
 
-<script src="js/config.js?v=4"></script>
-<script src="js/extract.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/config.js?v=5"></script>
+<script src="js/extract.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>

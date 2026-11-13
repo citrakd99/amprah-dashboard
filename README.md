@@ -19,3 +19,8 @@ Sheet harus dibagikan "Siapa saja yang memiliki link → Pelihat".
 ## Menjalankan lokal
 
     python -m http.server 8765
+
+## Dipasang sebagai aplikasi (PWA)
+Situs ini bisa dipasang seperti aplikasi: tombol **Pasang aplikasi** (Chrome/Edge), atau di iPhone
+Safari → Bagikan → **Tambahkan ke Layar Utama**. Service worker (`sw.js`) hanya menyimpan berkas
+aplikasi; data sheet tidak pernah disimpan di cache.
