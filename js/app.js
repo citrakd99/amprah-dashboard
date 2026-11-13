@@ -20,13 +20,15 @@
     set(v) { try { v ? localStorage.setItem(LS, v) : localStorage.removeItem(LS); } catch (e) { /* abaikan */ } }
   };
   let KEY = '';
-  (function () {
+  function readHash() {
     let h = '';
     try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) { h = location.hash.slice(1); }
     const id = parseId(h.replace(/^k=/, ''));
     if (id) { store.set(id); history.replaceState(null, '', location.pathname + location.search); }
-    KEY = id || store.get() || parseId(CFG.sheetId);
-  })();
+    return id;
+  }
+  KEY = readHash() || store.get() || parseId(CFG.sheetId);
+  addEventListener('hashchange', () => { const id = readHash(); if (id) { KEY = id; load(); } });
 
   // ---------- format ----------
   const nf0 = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
